@@ -11,55 +11,16 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ia]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Trust deployment host
+      - name: Rsync html to homelab
         env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-        shell: bash
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p "$SSH_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
-
-      - name: Replace HTML and restart through Portainer
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: 192.168.1.7
+          DEPLOY_USER: clay
           DEPLOY_PATH: /storage/webservices/amor
-          PORTAINER_WEBHOOK_URL: ${{ secrets.PORTAINER_WEBHOOK_URL }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
-          ssh -p "$SSH_PORT" "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'REMOTE'
-          set -euo pipefail
-          mkdir -p "$DEPLOY_PATH/html"
-          REMOTE
-
-          rsync -az --delete --chmod=F644,D755 -e "ssh -p $SSH_PORT" html/ \
-            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/html/"
-
-          set +e
-          response_file="$(mktemp)"
-          http_code="$(curl --silent --show-error --retry 3 --retry-delay 5 \
-            --output "$response_file" --write-out '%{http_code}' \
-            --request POST --data '' "$PORTAINER_WEBHOOK_URL")"
-          curl_exit_code=$?
-          set -e
-
-          if [ "$curl_exit_code" -ne 0 ] || [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
-            echo "Portainer rechazó el webhook (HTTP $http_code). Respuesta:"
-            sed -n '1,20p' "$response_file"
-            rm -f "$response_file"
-            exit 1
-          fi
-
-          rm -f "$response_file"
-          echo "Portainer aceptó el webhook y comenzó el redeploy del stack."
+          rsync -az --delete --chmod=F644,D755 html/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/html/"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "test -s $DEPLOY_PATH/html/index.html && echo HTML_OK"
