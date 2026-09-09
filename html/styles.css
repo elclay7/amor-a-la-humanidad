@@ -1,0 +1,92 @@
+:root{
+  --bg1:#0f0c29; --bg2:#302b63; --bg3:#24243e;
+  --card:rgba(255,255,255,.07); --text:#f5f3ff; --muted:#c9c4ee;
+  --accent:#ff6b8b;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg1:#fdf1f4; --bg2:#f6e6ee; --bg3:#fdfbff;
+    --card:rgba(255,255,255,.75); --text:#3a2c3a; --muted:#6e5f70;
+    --accent:#e0446b;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+  background-attachment:fixed;
+  color:var(--text);
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:2rem 1rem;
+  overflow-x:hidden;
+}
+.hearts{position:fixed;inset:0;pointer-events:none;z-index:0}
+.heart-float{
+  position:absolute;bottom:-2rem;
+  color:var(--accent);opacity:.5;
+  animation:rise linear forwards;
+}
+@keyframes rise{
+  to{transform:translateY(-110vh) rotate(35deg);opacity:0}
+}
+.card{
+  position:relative;z-index:1;
+  max-width:640px;width:100%;
+  background:var(--card);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:1.5rem;
+  padding:3rem 2.5rem;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  animation:fadeUp .9s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.heart{
+  font-size:3rem;line-height:1;
+  color:var(--accent);
+  animation:beat 1.6s ease-in-out infinite;
+}
+@keyframes beat{
+  0%,100%{transform:scale(1)}
+  14%{transform:scale(1.18)}
+  28%{transform:scale(1)}
+  42%{transform:scale(1.12)}
+  56%{transform:scale(1)}
+}
+h1{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:600;
+  font-size:clamp(2rem,6vw,3rem);
+  margin:.75rem 0 1.5rem;
+  letter-spacing:.01em;
+}
+.lead{
+  color:var(--muted);
+  font-style:italic;
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.25rem;
+  margin-bottom:1.25rem;
+}
+.msg{
+  font-weight:300;
+  line-height:1.75;
+  font-size:1.02rem;
+  margin-bottom:1.1rem;
+  color:var(--text);
+}
+.sign{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:1.15rem;
+  color:var(--muted);
+  margin-top:2rem;
+  padding-top:1.25rem;
+  border-top:1px solid rgba(255,255,255,.12);
+}
+@media (max-width:480px){ .card{padding:2.25rem 1.5rem} }
+@media (prefers-reduced-motion: reduce){
+  .heart-float,.heart{animation:none}
+}

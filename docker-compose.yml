@@ -1,0 +1,21 @@
+services:
+  amor-app:
+    image: nginx:alpine
+    container_name: amor-app
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    volumes:
+      - /storage/webservices/amor/html:/usr/share/nginx/html:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
